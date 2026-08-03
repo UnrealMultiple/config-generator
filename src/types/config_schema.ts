@@ -1,0 +1,786 @@
+export type ConfigItemType = 'choose' | 'input' | 'list' | 'map' | 'color'
+export type ConfigValueType = 'str' | 'int' | 'float' | 'bool' | 'rgb'
+
+export interface Option {
+  name: string
+  value: string
+}
+
+export interface MapField {
+  key: string
+  label: string
+  value_type: ConfigValueType
+}
+
+export interface ConfigItem {
+  key: string
+  type: ConfigItemType
+  value_type: ConfigValueType
+  msg: string
+  /** 仅当 type 为 "choose" 时提供可选项；bool 类型可省略，默认使用「是/否」 */
+  options?: Option[]
+  /** 仅当 type 为 "map" 时描述映射值对象的字段 */
+  fields?: MapField[]
+}
+
+/** 获取某配置项的可选项；bool 未显式声明时默认返回「是/否」 */
+export function getItemOptions(item: ConfigItem): Option[] {
+  if (item.options && item.options.length > 0) return item.options
+  return []
+}
+
+export const tshockConfigSchema: ConfigItem[] = [
+  { key: 'ServerPassword', type: 'input', value_type: 'str', msg: '服务器密码' },
+  { key: 'ServerPort', type: 'input', value_type: 'int', msg: '服务器端口' },
+  { key: 'MaxSlots', type: 'input', value_type: 'int', msg: '最大玩家数' },
+  {
+    key: 'ReservedSlots',
+    type: 'input',
+    value_type: 'int',
+    msg: '预留玩家位 (需要 tshock.reservedslot 权限)',
+  },
+  { key: 'ServerName', type: 'input', value_type: 'str', msg: '服务器名称' },
+  {
+    key: 'UseServerName',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '启用服务器名称',
+  },
+  { key: 'LogPath', type: 'input', value_type: 'str', msg: '日志路径' },
+  {
+    key: 'DebugLogs',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '启用 Debug 日志',
+  },
+  {
+    key: 'DisableLoginBeforeJoin',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '关闭进服前登录',
+  },
+  {
+    key: 'IgnoreChestStacksOnLoad',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '加载地图时忽略箱子物品最大堆叠检验',
+  },
+  {
+    key: 'WorldTileProvider',
+    type: 'choose',
+    value_type: 'str',
+    msg: '地图图格提供器',
+    options: [
+      { name: '默认 (兼容性优先)', value: 'default' },
+      { name: '结构化 (内存和访问效率优先)', value: 'constileation' },
+      { name: '堆 (节省内存)', value: 'heaptile' },
+    ],
+  },
+  {
+    key: 'AutoSave',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '自动保存',
+  },
+  {
+    key: 'AnnounceSave',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '保存时发送广播',
+  },
+  {
+    key: 'ShowBackupAutosaveMessages',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '自动备份时发送广播',
+  },
+  { key: 'BackupInterval', type: 'input', value_type: 'int', msg: '自动备份间隔 (单位：分钟)' },
+  {
+    key: 'BackupKeepFor',
+    type: 'input',
+    value_type: 'int',
+    msg: '每个备份保留时间 (单位：分钟)',
+  },
+  {
+    key: 'SaveWorldOnCrash',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '服务器崩溃时保存地图',
+  },
+  {
+    key: 'SaveWorldOnLastPlayerExit',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '最后一个玩家离开时保存地图',
+  },
+  {
+    key: 'InvasionMultiplier',
+    type: 'input',
+    value_type: 'int',
+    msg: '/worldevent invasion入侵规模系数 入侵规模 = 100 + 入侵规模系数 X 在线玩家数',
+  },
+  {
+    key: 'DefaultMaximumSpawns',
+    type: 'input',
+    value_type: 'int',
+    msg: '默认单个玩家附近允许存在的最大活跃生物数量上限',
+  },
+  {
+    key: 'DefaultSpawnRate',
+    type: 'input',
+    value_type: 'int',
+    msg: '默认生物生成的时间间隔 (单位：帧)，值越小生成越快',
+  },
+  {
+    key: 'InfiniteInvasion',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '/worldevent invasion无限入侵',
+  },
+  {
+    key: 'PvPMode',
+    type: 'choose',
+    value_type: 'str',
+    msg: 'PVP模式',
+    options: [
+      { name: '正常', value: 'normal' },
+      { name: '强制 PVP', value: 'always' },
+      { name: '强制无队伍 PVP', value: 'pvpwithnoteam' },
+      { name: '禁用 PVP', value: 'disabled' },
+    ],
+  },
+  {
+    key: 'SpawnProtection',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '出生点保护',
+  },
+  {
+    key: 'SpawnProtectionRadius',
+    type: 'input',
+    value_type: 'int',
+    msg: '出生点保护半径 (单位：图格)',
+  },
+  {
+    key: 'RangeChecks',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '范围检查',
+  },
+  {
+    key: 'HardcoreOnly',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '仅允许硬核角色加入',
+  },
+  {
+    key: 'MediumcoreOnly',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '仅允许中核角色加入',
+  },
+  {
+    key: 'SoftcoreOnly',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '仅允许软核角色加入',
+  },
+  {
+    key: 'DisableBuild',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '禁止建筑',
+  },
+  {
+    key: 'DisableHardmode',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '禁止进入困难模式',
+  },
+  {
+    key: 'DisableDungeonGuardian',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '已弃用-禁止召唤骷髅王',
+  },
+  {
+    key: 'DisableClownBombs',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '关闭小丑炸弹',
+  },
+  {
+    key: 'DisableSnowBalls',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '关闭雪球',
+  },
+  {
+    key: 'DisableTombstones',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '关闭墓碑掉落',
+  },
+  {
+    key: 'DisablePrimeBombs',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '关闭机械骷髅王炸弹',
+  },
+  {
+    key: 'ForceTime',
+    type: 'choose',
+    value_type: 'str',
+    msg: '强制固定时间',
+    options: [
+      { name: '正常', value: 'normal' },
+      { name: '永昼', value: 'day' },
+      { name: '永夜', value: 'night' },
+    ],
+  },
+  {
+    key: 'DisableInvisPvP',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '阻止玩家 PVP 时使用隐身 Buff',
+  },
+  {
+    key: 'MaxRangeForDisabled',
+    type: 'input',
+    value_type: 'int',
+    msg: '玩家被限制行动时可移动的最大距离',
+  },
+  {
+    key: 'RegionProtectChests',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '保护区域内的箱子',
+  },
+  {
+    key: 'RegionProtectGemLocks',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '保护区域内的宝石锁',
+  },
+  {
+    key: 'IgnoreProjUpdate',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '忽略弹幕更新的检测',
+  },
+  {
+    key: 'IgnoreProjKill',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '忽略弹幕Kill检测',
+  },
+  {
+    key: 'AllowCutTilesAndBreakables',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '允许玩家在无权建筑的地方打破易碎品 (eg. 罐子, 草)',
+  },
+  {
+    key: 'AllowIce',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '允许玩家在无权建筑的地方放置冰',
+  },
+  {
+    key: 'AllowCrimsonCreep',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '允许猩红蔓延',
+  },
+  {
+    key: 'AllowCorruptionCreep',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '允许腐化蔓延',
+  },
+  {
+    key: 'AllowHallowCreep',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '允许神圣蔓延',
+  },
+  {
+    key: 'StatueSpawn200',
+    type: 'input',
+    value_type: 'int',
+    msg: '200像素 (12.5格) 内最大雕像怪数量',
+  },
+  {
+    key: 'StatueSpawn600',
+    type: 'input',
+    value_type: 'int',
+    msg: '600像素 (37.5格) 内最大雕像怪数量',
+  },
+  { key: 'StatueSpawnWorld', type: 'input', value_type: 'int', msg: '世界中最大雕像怪数量' },
+  {
+    key: 'PreventBannedItemSpawn',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '阻止玩家被给予被封禁的物品',
+  },
+  {
+    key: 'PreventDeadModification',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '阻止玩家在死亡状态下与游戏世界进行交互',
+  },
+  {
+    key: 'PreventInvalidPlaceStyle',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '阻止玩家放置无效样式的图格',
+  },
+  {
+    key: 'ForceXmas',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '强制圣诞节事件 (不是霜月!!)',
+  },
+  {
+    key: 'ForceHalloween',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '强制万圣节事件 (不是南瓜月!!)',
+  },
+  {
+    key: 'AllowAllowedGroupsToSpawnBannedItems',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '"PreventBannedItemSpawn"为true时，允许给予"禁止物品允许列表中的组"被封禁的物品',
+  },
+  {
+    key: 'RespawnSeconds',
+    type: 'input',
+    value_type: 'int',
+    msg: '非BOSS时玩家复活时间 (0 为不设置)',
+  },
+  {
+    key: 'RespawnBossSeconds',
+    type: 'input',
+    value_type: 'int',
+    msg: 'BOSS时玩家复活时间 (0 为不设置)',
+  },
+  {
+    key: 'AnonymousBossInvasions',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '广播Boss和入侵的召唤者',
+  },
+  {
+    key: 'MaxHP',
+    type: 'input',
+    value_type: 'int',
+    msg: '允许玩家最大生命值 (tshock.ignore.hp 跳过检查) (超过会被限制行动)',
+  },
+  {
+    key: 'MaxMP',
+    type: 'input',
+    value_type: 'int',
+    msg: '允许玩家最大魔力值 (tshock.ignore.mp 跳过检查) (超过会被限制行动)',
+  },
+  {
+    key: 'BombExplosionRadius',
+    type: 'input',
+    value_type: 'int',
+    msg: '爆炸物能影响液体的最大距离 (单位：图格)',
+  },
+  {
+    key: 'GiveItemsDirectly',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '直接将物品放入玩家背包',
+  },
+  {
+    key: 'DefaultRegistrationGroupName',
+    type: 'input',
+    value_type: 'str',
+    msg: '新注册用户默认的组名',
+  },
+  { key: 'DefaultGuestGroupName', type: 'input', value_type: 'str', msg: '未登录玩家默认的组名' },
+  {
+    key: 'RememberLeavePos',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '加入服务器后回到上次离开时的位置 (玩家名和 IP 一样才会执行)',
+  },
+  {
+    key: 'MaximumLoginAttempts',
+    type: 'input',
+    value_type: 'int',
+    msg: '最大失败登录尝试次数 (超过后踢出玩家)',
+  },
+  {
+    key: 'KickOnMediumcoreDeath',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出死亡的中核玩家',
+  },
+  {
+    key: 'MediumcoreKickReason',
+    type: 'input',
+    value_type: 'str',
+    msg: '踢出死亡的中核玩家的理由',
+  },
+  {
+    key: 'BanOnMediumcoreDeath',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '封禁死亡的中核玩家',
+  },
+  { key: 'MediumcoreBanReason', type: 'input', value_type: 'str', msg: '封禁死亡的中核玩家的理由' },
+  {
+    key: 'DisableDefaultIPBan',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '禁用 Ban 时默认封禁 IP',
+  },
+  {
+    key: 'EnableWhitelist',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '启用 IP 白名单',
+  },
+  { key: 'WhitelistKickReason', type: 'input', value_type: 'str', msg: '踢出非白名单玩家理由' },
+  { key: 'ServerFullReason', type: 'input', value_type: 'str', msg: '服务器满人踢出理由' },
+  {
+    key: 'ServerFullNoReservedReason',
+    type: 'input',
+    value_type: 'str',
+    msg: '服务器满人且无预留踢出理由',
+  },
+  {
+    key: 'KickOnHardcoreDeath',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出死亡的硬核玩家',
+  },
+  { key: 'HardcoreKickReason', type: 'input', value_type: 'str', msg: '踢出死亡的硬核玩家的理由' },
+  {
+    key: 'BanOnHardcoreDeath',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '封禁死亡的硬核玩家',
+  },
+  { key: 'HardcoreBanReason', type: 'input', value_type: 'str', msg: '封禁死亡的硬核玩家的理由' },
+  {
+    key: 'KickProxyUsers',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出使用代理的玩家 (检测能力取决于GeoIP.dat)',
+  },
+  {
+    key: 'RequireLogin',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '强制要求玩家登录',
+  },
+  {
+    key: 'AllowLoginAnyUsername',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '允许登录非玩家名账户 (/login <用户名> <密码>)',
+  },
+  {
+    key: 'AllowRegisterAnyUsername',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '允许注册非玩家名账户 (/register <用户名> <密码>)',
+  },
+  { key: 'MinimumPasswordLength', type: 'input', value_type: 'int', msg: '注册最短密码长度' },
+  {
+    key: 'BCryptWorkFactor',
+    type: 'input',
+    value_type: 'int',
+    msg: '用户密码加密 BCrypt 工作因子，值越高安全性越强但验证越慢 (范围：5-31)',
+  },
+  {
+    key: 'DisableUUIDLogin',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '禁用UUID登录 (即关闭同设备免密登录)',
+  },
+  {
+    key: 'KickEmptyUUID',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出空UUID玩家',
+  },
+  {
+    key: 'TilePaintThreshold',
+    type: 'input',
+    value_type: 'int',
+    msg: '油漆图格速度阈值 (tshock.ignore.paint 跳过检查) (单位：图格/秒)',
+  },
+  {
+    key: 'KickOnTilePaintThresholdBroken',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出超过油漆图格速度阈值的玩家',
+  },
+  {
+    key: 'MaxDamage',
+    type: 'input',
+    value_type: 'int',
+    msg: '玩家单次造成伤害阈值 (tshock.ignore.damage 跳过检查)',
+  },
+  {
+    key: 'MaxProjDamage',
+    type: 'input',
+    value_type: 'int',
+    msg: '玩家弹幕伤害阈值 (tshock.ignore.damage 跳过检查)',
+  },
+  {
+    key: 'KickOnDamageThresholdBroken',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出超过玩家单次造成伤害阈值的玩家',
+  },
+  {
+    key: 'TileKillThreshold',
+    type: 'input',
+    value_type: 'int',
+    msg: '玩家破坏图格阈值 (tshock.ignore.removetile 跳过检查) (单位：图格/秒)',
+  },
+  {
+    key: 'KickOnTileKillThresholdBroken',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出超过玩家破坏图格阈值的玩家',
+  },
+  {
+    key: 'TilePlaceThreshold',
+    type: 'input',
+    value_type: 'int',
+    msg: '玩家替换图格阈值 (tshock.ignore.placetile 跳过检查) (单位：图格/秒)',
+  },
+  {
+    key: 'KickOnTilePlaceThresholdBroken',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出超过玩家替换图格阈值的玩家',
+  },
+  {
+    key: 'TileLiquidThreshold',
+    type: 'input',
+    value_type: 'int',
+    msg: '玩家放置流体阈值 (tshock.ignore.liquid 跳过检查) (单位：图格/秒)',
+  },
+  {
+    key: 'KickOnTileLiquidThresholdBroken',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出超过玩家放置流体阈值的玩家',
+  },
+  {
+    key: 'ProjIgnoreShrapnel',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '在玩家生成弹幕阈值计数中忽略水晶子弹的碎片',
+  },
+  {
+    key: 'ProjectileThreshold',
+    type: 'input',
+    value_type: 'int',
+    msg: '玩家生成弹幕阈值 (tshock.ignore.projectile 跳过检查)',
+  },
+  {
+    key: 'KickOnProjectileThresholdBroken',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出超过玩家生成弹幕阈值的玩家',
+  },
+  {
+    key: 'HealOtherThreshold',
+    type: 'input',
+    value_type: 'int',
+    msg: '治疗其他玩家阈值 (tshock.ignore.damage 跳过检查)',
+  },
+  {
+    key: 'KickOnHealOtherThresholdBroken',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '踢出超过治疗其他玩家阈值的玩家',
+  },
+  {
+    key: 'SuppressPermissionFailureNotices',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '关闭无建筑权限警告',
+  },
+  {
+    key: 'DisableModifiedZenith',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '阻止非法天顶剑弹幕',
+  },
+  {
+    key: 'DisableCustomDeathMessages',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '阻止自定义死亡讯息',
+  },
+  {
+    key: 'AllowCtTag',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '是否允许 Ct 标签 (此标签会崩溃 PE 玩家!!!)',
+  },
+  {
+    key: 'CommandSpecifier',
+    type: 'input',
+    value_type: 'str',
+    msg: '命令起始符，长度大于 1 无法正常识别命令',
+  },
+  {
+    key: 'CommandSilentSpecifier',
+    type: 'input',
+    value_type: 'str',
+    msg: '静默命令起始符，长度大于 1 无法正常识别静默命令',
+  },
+  { key: 'MaximumChatMessageLength', type: 'input', value_type: 'int', msg: '聊天消息最大长度' },
+  {
+    key: 'TruncateExcessiveChatMessages',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '是否截断超长聊天消息',
+  },
+  {
+    key: 'DisableSpewLogs',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '禁用向有日志权限 (tshock.admin.viewlogs) 的玩家发送日志',
+  },
+  {
+    key: 'DisableSecondUpdateLogs',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '禁用玩家被限制行动时记录日志',
+  },
+  { key: 'SuperAdminChatRGB', type: 'color', value_type: 'rgb', msg: '超级管理员聊天颜色 (RGB)' },
+  { key: 'SuperAdminChatPrefix', type: 'input', value_type: 'str', msg: '超级管理员聊天前缀' },
+  { key: 'SuperAdminChatSuffix', type: 'input', value_type: 'str', msg: '超级管理员聊天后缀' },
+  {
+    key: 'EnableGeoIP',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '启用GeoIP，玩家加入服务器显示玩家国家',
+  },
+  {
+    key: 'DisplayIPToAdmins',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '玩家加入服务器时向管理员显示玩家IP',
+  },
+  {
+    key: 'ChatFormat',
+    type: 'input',
+    value_type: 'str',
+    msg: '聊天格式 ({0}: 组名，{1}: 组前缀，{2}: 玩家名，{3}: 组后缀，{4}: 聊天消息)',
+  },
+  { key: 'ChatAboveHeadsFormat', type: 'input', value_type: 'str', msg: '头顶聊天格式，同上' },
+  {
+    key: 'EnableChatAboveHeads',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '启用头顶聊天',
+  },
+  { key: 'BroadcastRGB', type: 'color', value_type: 'rgb', msg: '广播颜色' },
+  {
+    key: 'StorageType',
+    type: 'choose',
+    value_type: 'str',
+    msg: '数据库类型',
+    options: [
+      { name: 'MySQL', value: 'mysql' },
+      { name: 'SQLite', value: 'sqlite' },
+      { name: 'PostgresSQL', value: 'postgres' },
+    ],
+  },
+  {
+    key: 'SqliteConnectionString',
+    type: 'input',
+    value_type: 'str',
+    msg: 'SQLite连接字符串 (优先级高)',
+  },
+  { key: 'SqliteDBPath', type: 'input', value_type: 'str', msg: 'SQLite数据路径' },
+  {
+    key: 'MySqlConnectionString',
+    type: 'input',
+    value_type: 'str',
+    msg: 'MySQL连接字符串 (优先级高)',
+  },
+  { key: 'MySqlHost', type: 'input', value_type: 'str', msg: 'MySQL数据库地址' },
+  { key: 'MySqlDbName', type: 'input', value_type: 'str', msg: 'MySQL数据库名称' },
+  { key: 'MySqlUsername', type: 'input', value_type: 'str', msg: 'MySQL用户名' },
+  { key: 'MySqlPassword', type: 'input', value_type: 'str', msg: 'MySQL用户密码' },
+  {
+    key: 'PostgresConnectionString',
+    type: 'input',
+    value_type: 'str',
+    msg: 'Postgres连接字符串 (优先级高)',
+  },
+  { key: 'PostgresHost', type: 'input', value_type: 'str', msg: 'Postgres数据库地址' },
+  { key: 'PostgresDbName', type: 'input', value_type: 'str', msg: 'Postgres数据库名称' },
+  { key: 'PostgresUsername', type: 'input', value_type: 'str', msg: 'Postgres用户名' },
+  { key: 'PostgresPassword', type: 'input', value_type: 'str', msg: 'Postgres数据库名称' },
+  {
+    key: 'UseSqlLogs',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '使用数据库进行日志 (不推荐)',
+  },
+  {
+    key: 'RevertToTextLogsOnSqlFailures',
+    type: 'input',
+    value_type: 'int',
+    msg: '数据库日志失败回文本日志阈值 (超过就会自动退回文本日志)',
+  },
+  {
+    key: 'RestApiEnabled',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '启用 REST API',
+  },
+  { key: 'RestApiPort', type: 'input', value_type: 'int', msg: 'REST API侦听端口' },
+  {
+    key: 'LogRest',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '记录 REST API 日志',
+  },
+  {
+    key: 'EnableTokenEndpointAuthentication',
+    type: 'choose',
+    value_type: 'bool',
+    msg: '启用公共 REST API 端点令牌认证 (/v2/server/status, /v3/server/motd, /v3/server/rules)',
+  },
+  {
+    key: 'RESTMaximumRequestsPerInterval',
+    type: 'input',
+    value_type: 'int',
+    msg: '每个令牌在每个时间间隔内允许的最大 REST API 请求次数',
+  },
+  {
+    key: 'RESTRequestBucketDecreaseIntervalMinutes',
+    type: 'input',
+    value_type: 'int',
+    msg: '每个令牌请求计数器的重置时间间隔 (单位：分钟)',
+  },
+  {
+    key: 'ApplicationRestTokens',
+    type: 'map',
+    value_type: 'str',
+    fields: [
+      { key: 'Username', label: '用户名', value_type: 'str' },
+      { key: 'UserGroupName', label: '权限组', value_type: 'str' },
+    ],
+    msg: 'REST API 永久令牌 (你需要填入BOT/工具的令牌，泄漏会导致服务器风险)',
+  },
+]
+
+export default tshockConfigSchema
